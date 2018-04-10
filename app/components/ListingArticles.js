@@ -9,7 +9,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   WebView,
-  Linking
+  Linking,
+  Button
 } from 'react-native';
 import { Actions } from 'react-native-router-flux'
 
@@ -18,7 +19,8 @@ export default class ListingArticles extends Component {
     super(props)
     this.state = {
       searchText: null,
-      articles: []
+      articles: [],
+      fetch: false
     }
     this.getArticles = this.getArticles.bind(this)
     this.renderRow = this.renderRow.bind(this)
@@ -36,6 +38,7 @@ export default class ListingArticles extends Component {
 
   async getArticles() {
     try {
+      this.setState({fetch: true})
       let api_key = '15410937072241ac91c95a599963e337'
       let params = this.state.search
       let url = "https://api.nytimes.com/svc/search/v2/articlesearch.json"
@@ -52,7 +55,7 @@ export default class ListingArticles extends Component {
         console.log(responseJson.error);
       } else {
         let articles = responseJson
-        this.setState({articles: articles.response.docs})
+        this.setState({articles: articles.response.docs, fetch: false})
       }
     } catch (error) {
       console.log(error);
@@ -63,7 +66,6 @@ export default class ListingArticles extends Component {
     Actions.webview({url: articles.item.web_url})
   }
 
-    // <Text>{articles.item.headline.main}</Text>
   renderRow(articles) {
     return (
       <TouchableOpacity onPress={this.goToWeb.bind(this, articles)}>
@@ -92,11 +94,32 @@ export default class ListingArticles extends Component {
     )
   }
 
+  renderHeader() {
+    return (
+      <View style={styles.container}>
+        <View style={{width:'75%'}}>
+          <TextInput
+            style={{backgroundColor:'#ffffff', height:30, paddingLeft: 10, paddingTop: 0, borderRadius: 10}}
+            underlineColorAndroid="transparent"
+            disableFullscreenUI={true}
+            placeholder='Search'
+            onChangeText={this.setSearch.bind(this)}
+            value={this.state.search}
+            keyboardType='ascii-capable'/>
+        </View>
+        <View style={{backgroundColor:'rgb(243, 55, 47)',   height:30, borderRadius: 10, justifyContent: 'center' }}>
+          <TouchableOpacity onPress={this.getArticles}        style={{marginLeft:10, marginRight: 10}}>
+            <Text style={{color: '#FFFFFF'}}>Search</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    )
+  }
+
   render() {
-    console.log('state: ', this.state.articles);
     let data = []
     let content = null
-    if (this.state.articles.length == 0) {
+    if (this.state.articles.length == 0 || this.state.fetch) {
       content = (
         <ActivityIndicator
           animating={true}
@@ -114,20 +137,8 @@ export default class ListingArticles extends Component {
 
     return (
       <View>
-        <View styles={{}}>
-          <TextInput
-            style={{backgroundColor:'skyblue', height:40, width: '90%'}}
-            underlineColorAndroid="transparent"
-            disableFullscreenUI={true}
-            placeholder='Search'
-            onChangeText={this.setSearch.bind(this)}
-            value={this.state.search}
-            keyboardType='ascii-capable'/>
-          <View>
-            <TouchableOpacity onPress={this.getArticles}>
-              <Text>Search Articles</Text>
-            </TouchableOpacity>
-          </View>
+        <View style={[layoutStyles.body, listingStyles.body]}>
+          {this.renderHeader()}
           {content}
         </View>
       </View>
@@ -137,10 +148,11 @@ export default class ListingArticles extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+    backgroundColor: '#48D1CC',
+    height: 90
   },
   welcome: {
     fontSize: 20,
@@ -161,31 +173,6 @@ const listingStyles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'row'
-  },
-  titleBar: {
-    width: 50,
-    padding: 16,
-    top: 0,
-    bottom: 0,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: 'gray'
-  },
-  logoArea: {
-    width: 50,
-    height: 150,
-    backgroundColor: 'blue',
-  },
-  typeButton: {
-    padding: 5,
-  },
-  mainBody: {
-
-  },
-  bodyMenu: {
-    width: 600,
-    height: 80,
-    backgroundColor: 'rgb(23,136,205)',
   },
   item: {
     width: 600,
@@ -246,81 +233,11 @@ const listingStyles = StyleSheet.create({
     color: 'rgba(255, 96, 15, 1.0)',
     fontSize: 14,
   },
-  inspectionRowAssigneeName: {
-    fontSize: 12,
-    color: 'rgba(170, 170, 170, 1.0)',
+})
+
+const layoutStyles = StyleSheet.create({
+  body: {
+    backgroundColor:'white',
+    height: '100%',
   },
-  filterToolbar: {
-    justifyContent: 'flex-end',
-    flexDirection: 'row',
-  },
-  assigneeToolbar:{
-    justifyContent:'flex-start',
-    top:5
-  },
-  filterToolbarIcon: {
-    paddingRight: 12,
-    paddingTop: 10,
-    fontSize: 15
-  },
-  filterContent: {
-  },
-  filterGroup: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  filterGroupLabel: {
-    flex: 1,
-    maxWidth: 80,
-    alignItems: 'flex-end',
-    paddingTop: 5,
-    paddingRight: 10,
-  },
-  filterGroupControl: {
-    flex: 2,
-    maxWidth: 400,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  assigneeContent: {
-  },
-  assigneeGroup:{
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  assigneeLabel: {
-    flex: 1,
-    maxWidth: 140,
-    alignItems: 'flex-end',
-    paddingTop: 5,
-    paddingRight: 10,
-  },
-  assigneeGroupControl: {
-    flex: 2,
-    maxWidth: 10,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  fetchNewInspection: {
-    margin: 5,
-    marginBottom: 2,
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: '#7986CB',
-    alignItems: 'center',
-  },
-  fetchNewInspectionText: {
-    color: '#FFFFFF',
-  },
-  filterForm: {
-    width: '80%',
-    marginRight: 10,
-    borderBottomWidth: 0.5
-  },
-  filterLabel: {
-    width: 70,
-    top: 10
-  }
 })
