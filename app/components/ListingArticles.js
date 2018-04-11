@@ -13,6 +13,7 @@ import {
   Button
 } from 'react-native';
 import { Actions } from 'react-native-router-flux'
+import _ from 'lodash'
 
 export default class ListingArticles extends Component {
   constructor(props) {
@@ -21,7 +22,7 @@ export default class ListingArticles extends Component {
       searchText: null,
       articles: [],
       fetch: false,
-      newest: true,
+      newest: false,
       older: false
     }
     this.getArticles = this.getArticles.bind(this)
@@ -68,22 +69,19 @@ export default class ListingArticles extends Component {
     Actions.webview({url: articles.item.web_url})
   }
 
-  renderRow(articles) {
-    let date =  articles.item.pub_date
+  renderRow(article) {
+    let date =  article.item.pub_date
     date = date.substring(0, 10)
 
     return (
-      <TouchableOpacity onPress={this.goToWeb.bind(this, articles)}>
+      <TouchableOpacity onPress={this.goToWeb.bind(this, article)}>
         <View style={listingStyles.inspectionRow}>
           <View style={listingStyles.inspectionRowContent}>
             <Text style={listingStyles.inspectionRowInspectionName}>
-              {articles.item.headline.main}
+              {article.item.headline.main}
             </Text>
             <Text style={listingStyles.inspectionRowInspectionId}>
-              {articles.item.snippet}
-            </Text>
-            <Text style={listingStyles.inspectionRowPropertyName}>
-              Unit
+              {article.item.snippet}
             </Text>
             <Text style={listingStyles.inspectionRowInspectionStatus}>
               {date}
@@ -92,6 +90,22 @@ export default class ListingArticles extends Component {
         </View>
       </TouchableOpacity>
     )
+  }
+
+  onClickButtonNewest() {
+    let { articles, newest, older } = this.state
+    if (!newest) {
+      articles = _.orderBy(articles, ['pub_date'],['asc'])
+      this.setState({ newest: true, older: false, articles: articles })
+    }
+  }
+
+  onClickButtonOlder() {
+    let { articles, newest, older } = this.state
+    if (!older) {
+      articles = _.orderBy(articles, ['pub_date'],['desc'])
+      this.setState({ older: true, newest: false, articles: articles })
+    }
   }
 
   renderHeader() {
@@ -117,10 +131,10 @@ export default class ListingArticles extends Component {
         </View>
 
         <View style={styles.container1}>
-          <TouchableOpacity onPress={() => this.setState({older: !older, newest: !newest})} style={newest ? styles.buttonActive : styles.buttonInActive}>
+          <TouchableOpacity onPress={this.onClickButtonNewest.bind(this)} style={newest ? styles.buttonActive : styles.buttonInActive}>
               <Text style={{color: '#FFFFFF'}}>Newest</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => this.setState({older: !older, newest: !newest})} style={older ? styles.buttonActive : styles.buttonInActive}>
+          <TouchableOpacity onPress={this.onClickButtonOlder.bind(this)} style={older ? styles.buttonActive : styles.buttonInActive}>
             <Text style={{color: '#FFFFFF'}}>Older</Text>
           </TouchableOpacity>
         </View>
@@ -131,13 +145,7 @@ export default class ListingArticles extends Component {
 
   render() {
     let { articles, newest, older } = this.state
-    if (articles.length != 0) {
-      if (newest) {
-        articles = _.orderBy(articles, ['pub_date'],['asc'])
-      } else {
-        articles = _.orderBy(articles, ['pub_date'],['desc'])
-      }
-    }
+    console.log('ART: ', articles);
 
     let data = []
     let content = null
