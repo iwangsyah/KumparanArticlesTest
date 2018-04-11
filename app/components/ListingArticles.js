@@ -70,11 +70,6 @@ export default class ListingArticles extends Component {
     return (
       <TouchableOpacity onPress={this.goToWeb.bind(this, articles)}>
         <View style={listingStyles.inspectionRow}>
-          <View style={listingStyles.inspectionRowStatus}>
-          <Text>
-            Image
-          </Text>
-          </View>
           <View style={listingStyles.inspectionRowContent}>
             <Text style={listingStyles.inspectionRowInspectionName}>
               {articles.item.headline.main}
