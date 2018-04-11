@@ -20,7 +20,9 @@ export default class ListingArticles extends Component {
     this.state = {
       searchText: null,
       articles: [],
-      fetch: false
+      fetch: false,
+      newest: true,
+      older: false
     }
     this.getArticles = this.getArticles.bind(this)
     this.renderRow = this.renderRow.bind(this)
@@ -67,6 +69,9 @@ export default class ListingArticles extends Component {
   }
 
   renderRow(articles) {
+    let date =  articles.item.pub_date
+    date = date.substring(0, 10)
+
     return (
       <TouchableOpacity onPress={this.goToWeb.bind(this, articles)}>
         <View style={listingStyles.inspectionRow}>
@@ -81,7 +86,7 @@ export default class ListingArticles extends Component {
               Unit
             </Text>
             <Text style={listingStyles.inspectionRowInspectionStatus}>
-              {articles.item.pub_date}
+              {date}
             </Text>
           </View>
         </View>
@@ -90,31 +95,53 @@ export default class ListingArticles extends Component {
   }
 
   renderHeader() {
+    let { search, newest, older } = this.state
+
     return (
       <View style={styles.container}>
-        <View style={{width:'75%'}}>
-          <TextInput
-            style={{backgroundColor:'#ffffff', height:30, paddingLeft: 10, paddingTop: 0, borderRadius: 10}}
-            underlineColorAndroid="transparent"
-            disableFullscreenUI={true}
-            placeholder='Search'
-            onChangeText={this.setSearch.bind(this)}
-            value={this.state.search}
-            keyboardType='ascii-capable'/>
+
+        <View style={styles.container1}>
+          <View style={{width:'75%'}}>
+            <TextInput
+              style={{backgroundColor:'#ffffff', height:30, paddingLeft: 10, paddingTop: 0, borderRadius: 10}}
+              underlineColorAndroid="transparent"
+              disableFullscreenUI={true}
+              placeholder={search}
+              keyboardType='ascii-capable'/>
+          </View>
+          <View style={{backgroundColor:'rgb(243, 55, 47)',   height:30, borderRadius: 10, justifyContent: 'center' }}>
+            <TouchableOpacity onPress={this.getArticles}        style={{marginLeft:10, marginRight: 10}}>
+              <Text style={{color: '#FFFFFF'}}>Search</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        <View style={{backgroundColor:'rgb(243, 55, 47)',   height:30, borderRadius: 10, justifyContent: 'center' }}>
-          <TouchableOpacity onPress={this.getArticles}        style={{marginLeft:10, marginRight: 10}}>
-            <Text style={{color: '#FFFFFF'}}>Search</Text>
+
+        <View style={styles.container1}>
+          <TouchableOpacity onPress={() => this.setState({older: !older, newest: !newest})} style={newest ? styles.buttonActive : styles.buttonInActive}>
+              <Text style={{color: '#FFFFFF'}}>Newest</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => this.setState({older: !older, newest: !newest})} style={older ? styles.buttonActive : styles.buttonInActive}>
+            <Text style={{color: '#FFFFFF'}}>Older</Text>
           </TouchableOpacity>
         </View>
+
       </View>
     )
   }
 
   render() {
+    let { articles, newest, older } = this.state
+    if (articles.length != 0) {
+      if (newest) {
+        articles = _.orderBy(articles, ['pub_date'],['asc'])
+      } else {
+        articles = _.orderBy(articles, ['pub_date'],['desc'])
+      }
+    }
+
     let data = []
     let content = null
-    if (this.state.articles.length == 0 || this.state.fetch) {
+    if (articles.length == 0 || this.state.fetch) {
       content = (
         <ActivityIndicator
           animating={true}
@@ -143,11 +170,16 @@ export default class ListingArticles extends Component {
 
 const styles = StyleSheet.create({
   container: {
+    flexDirection: 'column',
+    justifyContent: 'space-around',
+    backgroundColor: '#48D1CC',
+    height: 100,
+    paddingTop: 20,
+  },
+  container1: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    backgroundColor: '#48D1CC',
-    height: 90
   },
   welcome: {
     fontSize: 20,
@@ -159,6 +191,22 @@ const styles = StyleSheet.create({
     color: '#333333',
     marginBottom: 5,
   },
+  buttonActive: {
+    backgroundColor:'rgb(0, 126, 105)',
+    height:30,
+    width: '46%',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  buttonInActive: {
+    backgroundColor:'rgb(40, 84, 245)',
+    height:30,
+    width: '46%',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center'
+  }
 });
 
 const listingStyles = StyleSheet.create({
