@@ -145,7 +145,6 @@ export default class ListingArticles extends Component {
 
   render() {
     let { articles, newest, older } = this.state
-    console.log('ART: ', articles);
 
     let data = []
     let content = null
