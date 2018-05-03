@@ -10,7 +10,8 @@ import {
   ActivityIndicator,
   WebView,
   Linking,
-  Button
+  Button,
+  Image
 } from 'react-native';
 import { Actions } from 'react-native-router-flux'
 import _ from 'lodash'
@@ -58,6 +59,7 @@ export default class ListingArticles extends Component {
         console.log(responseJson.error);
       } else {
         let articles = responseJson
+        console.log('responseJson: ', responseJson);
         this.setState({articles: articles.response.docs, fetch: false})
       }
     } catch (error) {
@@ -72,11 +74,17 @@ export default class ListingArticles extends Component {
   renderRow(article) {
     let date =  article.item.pub_date
     date = date.substring(0, 10)
+    let uri = null
+    if (article.item.multimedia.length > 0 && article.item.multimedia[0]) {
+      uri = 'https://static01.nyt.com/'+article.item.multimedia[0].url
+    }
 
     return (
       <TouchableOpacity onPress={this.goToWeb.bind(this, article)}>
         <View style={listingStyles.inspectionRow}>
           <View style={listingStyles.inspectionRowContent}>
+          <Image source={{uri: uri}}
+            style={{width: '100%', height: 100}} />
             <Text style={listingStyles.inspectionRowInspectionName}>
               {article.item.headline.main}
             </Text>
@@ -87,6 +95,7 @@ export default class ListingArticles extends Component {
               {date}
             </Text>
           </View>
+
         </View>
       </TouchableOpacity>
     )
